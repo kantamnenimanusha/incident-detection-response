@@ -1,9 +1,15 @@
 from datetime import datetime
 
+incident_history = []
+incident_counter = 0
+
 
 def create_incident(incident_type, severity, description):
+    global incident_counter
+    incident_counter += 1
+
     incident = {
-        "id": "INC-" + datetime.now().strftime("%Y%m%d%H%M%S"),
+        "id": "INC-" + datetime.now().strftime("%Y%m%d%H%M%S") + "-" + str(incident_counter),
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "type": incident_type,
         "severity": severity,
@@ -11,7 +17,22 @@ def create_incident(incident_type, severity, description):
         "status": "ACTIVE"
     }
 
+    incident_history.append(incident)
+
     return incident
+def get_incident_history():
+    return incident_history
+
+def display_incident_history():
+    print("\nINCIDENT HISTORY")
+    print("-" * 50)
+
+    if not incident_history:
+        print("No incidents recorded")
+        return
+
+    for incident in incident_history:
+        display_incident(incident)
 
 
 def resolve_incident(incident):
@@ -37,17 +58,16 @@ def display_incident(incident):
 
 
 if __name__ == "__main__":
-
-    incident = create_incident(
+    incident1 = create_incident(
         "Application",
         "CRITICAL",
         "Application returned HTTP 503"
     )
 
-    print("Before Recovery:")
-    display_incident(incident)
+    incident2 = create_incident(
+        "Resource",
+        "WARNING",
+        "High memory usage detected"
+    )
 
-    resolve_incident(incident)
-
-    print("After Recovery:")
-    display_incident(incident)
+    display_incident_history()
