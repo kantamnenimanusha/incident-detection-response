@@ -1,0 +1,6 @@
+ID,Timestamp,Type,Severity,Description,Status
+INC-20260909184527-1,2026-09-09 18:45:27,Application,CRITICAL,Application returned HTTP 503,ACTIVE
+INC-20260909184527-2,2026-09-09 18:45:27,Resource,WARNING,High memory usage detected,ACTIVE
+INC-20260909184825-1,2026-09-09 18:48:25,Application,CRITICAL,Application returned HTTP 503,ACTIVE
+INC-20260909184825-2,2026-09-09 18:48:25,Resource,WARNING,High memory usage detected,ACTIVE
+INC-20260909184931-1,2026-09-09 18:49:31,Application,CRITICAL,Application returned HTTP 503,RESOLVED

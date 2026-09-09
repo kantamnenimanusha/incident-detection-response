@@ -1,7 +1,9 @@
 from datetime import datetime
+import csv
 
 incident_history = []
 incident_counter = 0
+HISTORY_FILE = "logs/incident_history.csv"
 
 
 def create_incident(incident_type, severity, description):
@@ -18,10 +20,58 @@ def create_incident(incident_type, severity, description):
     }
 
     incident_history.append(incident)
+    save_incident(incident)
 
     return incident
+
+
+def save_incident(incident):
+    try:
+        with open(HISTORY_FILE, "r") as file:
+            file.read()
+        file_exists = True
+    except FileNotFoundError:
+        file_exists = False
+
+    with open(HISTORY_FILE, "a", newline="") as file:
+        writer = csv.writer(file)
+
+        if not file_exists:
+            writer.writerow([
+                "ID",
+                "Timestamp",
+                "Type",
+                "Severity",
+                "Description",
+                "Status"
+            ])
+
+        writer.writerow([
+            incident["id"],
+            incident["timestamp"],
+            incident["type"],
+            incident["severity"],
+            incident["description"],
+            incident["status"]
+        ])
+
+def update_incident(incident):
+    with open(HISTORY_FILE, "r", newline="") as file:
+        rows = list(csv.reader(file))
+
+    with open(HISTORY_FILE, "w", newline="") as file:
+        writer = csv.writer(file)
+
+        for row in rows:
+            if row and row[0] == incident["id"]:
+                row[5] = incident["status"]
+
+            writer.writerow(row)
+
+
 def get_incident_history():
     return incident_history
+
 
 def display_incident_history():
     print("\nINCIDENT HISTORY")
@@ -38,6 +88,7 @@ def display_incident_history():
 def resolve_incident(incident):
     incident["status"] = "RESOLVED"
     incident["resolved_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    update_incident(incident)
 
 
 def display_incident(incident):
@@ -58,16 +109,16 @@ def display_incident(incident):
 
 
 if __name__ == "__main__":
-    incident1 = create_incident(
+    incident = create_incident(
         "Application",
         "CRITICAL",
         "Application returned HTTP 503"
     )
 
-    incident2 = create_incident(
-        "Resource",
-        "WARNING",
-        "High memory usage detected"
-    )
+    print("\nBEFORE RECOVERY")
+    display_incident(incident)
 
-    display_incident_history()
+    resolve_incident(incident)
+
+    print("\nAFTER RECOVERY")
+    display_incident(incident)
