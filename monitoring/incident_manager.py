@@ -73,8 +73,19 @@ def update_incident(incident):
 
             writer.writerow(row)
 
+def load_incident_history():
+    try:
+        with open(HISTORY_FILE, "r", newline="") as file:
+            reader = csv.DictReader(file)
+
+            for incident in reader:
+                incident_history.append(incident)
+
+    except FileNotFoundError:
+        pass
 
 def get_incident_history():
+    load_incident_history()
     return incident_history
 
 
