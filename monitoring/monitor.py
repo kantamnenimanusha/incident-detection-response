@@ -2,6 +2,7 @@ import urllib.request
 import urllib.error
 import time
 from datetime import datetime
+from responder import restart_application
 
 
 HEALTH_URL = "http://127.0.0.1:5000/health"
@@ -59,6 +60,9 @@ def monitor():
             if not incident_active:
                 log_incident(f"INCIDENT | {message}")
                 print(f"[{current_time}] NEW INCIDENT LOGGED")
+
+                restart_application()
+
                 incident_active = True
 
         time.sleep(CHECK_INTERVAL)
