@@ -3,10 +3,11 @@ import csv
 
 incident_history = []
 incident_counter = 0
+
 HISTORY_FILE = "logs/incident_history.csv"
 
 
-def create_incident(incident_type, severity, description):
+def create_incident(incident_type, severity, description, subtype=""):
     global incident_counter
     incident_counter += 1
 
@@ -14,6 +15,7 @@ def create_incident(incident_type, severity, description):
         "id": "INC-" + datetime.now().strftime("%Y%m%d%H%M%S") + "-" + str(incident_counter),
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "type": incident_type,
+        "subtype": subtype,
         "severity": severity,
         "description": description,
         "status": "ACTIVE"
@@ -41,6 +43,7 @@ def save_incident(incident):
                 "ID",
                 "Timestamp",
                 "Type",
+                "Subtype",
                 "Severity",
                 "Description",
                 "Status"
@@ -50,10 +53,12 @@ def save_incident(incident):
             incident["id"],
             incident["timestamp"],
             incident["type"],
+            incident["subtype"],
             incident["severity"],
             incident["description"],
             incident["status"]
         ])
+
 
 def update_incident(incident):
     with open(HISTORY_FILE, "r", newline="") as file:
@@ -63,8 +68,8 @@ def update_incident(incident):
         writer = csv.writer(file)
 
         for row in rows:
-            if row and row[0] == incident["id"]:
-                row[5] = incident["status"]
+            if row and row[0] == incident.get("ID", incident.get("id")):
+                row[6] = incident["status"]
 
             writer.writerow(row)
 
@@ -88,6 +93,7 @@ def display_incident_history():
 def resolve_incident(incident):
     incident["status"] = "RESOLVED"
     incident["resolved_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
     update_incident(incident)
 
 
@@ -98,6 +104,7 @@ def display_incident(incident):
     print("ID:", incident["id"])
     print("Timestamp:", incident["timestamp"])
     print("Type:", incident["type"])
+    print("Subtype:", incident["subtype"])
     print("Severity:", incident["severity"])
     print("Description:", incident["description"])
     print("Status:", incident["status"])
@@ -112,7 +119,8 @@ if __name__ == "__main__":
     incident = create_incident(
         "Application",
         "CRITICAL",
-        "Application returned HTTP 503"
+        "Application returned HTTP 503",
+        "HTTP"
     )
 
     print("\nBEFORE RECOVERY")

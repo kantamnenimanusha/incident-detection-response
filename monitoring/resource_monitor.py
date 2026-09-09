@@ -1,12 +1,17 @@
 import subprocess
 import time
+import csv
 from datetime import datetime
+
 from incident_manager import create_incident, resolve_incident
 
+import os
 
-CPU_THRESHOLD = 80
-MEMORY_THRESHOLD = 80
+CPU_THRESHOLD = float(os.getenv("CPU_THRESHOLD", "80"))
+MEMORY_THRESHOLD = float(os.getenv("MEMORY_THRESHOLD", "80"))
+
 LOG_FILE = "logs/incidents.log"
+HISTORY_FILE = "logs/incident_history.csv"
 
 
 def get_cpu_usage():
@@ -47,16 +52,44 @@ def log_incident(message):
     with open(LOG_FILE, "a") as file:
         file.write(f"{current_time} | {message}\n")
 
+def get_active_incident(subtype):
+    active_incident = None
+
+    try:
+        with open(HISTORY_FILE, "r", newline="") as file:
+            reader = csv.DictReader(file)
+
+            for incident in reader:
+                if (
+                    incident.get("Type") == "Resource"
+                    and incident.get("Subtype", "") == subtype
+                    and incident.get("Status") == "ACTIVE"
+                ):
+                    active_incident = incident
+
+    except FileNotFoundError:
+        return None
+
+    return active_incident
+
 
 def monitor_resources():
     print("System Resource Monitor")
     print("-" * 40)
 
-    cpu_incident_active = False
-    memory_incident_active = False
+    cpu_incident = get_active_incident("CPU")
+    memory_incident = get_active_incident("MEMORY")
 
-    cpu_incident = None
-    memory_incident = None
+    cpu_incident_active = cpu_incident is not None
+    memory_incident_active = memory_incident is not None
+
+    if cpu_incident_active:
+        print("Existing active CPU incident found")
+        print("Incident ID:", cpu_incident["ID"])
+
+    if memory_incident_active:
+        print("Existing active memory incident found")
+        print("Incident ID:", memory_incident["ID"])
 
     while True:
         cpu = get_cpu_usage()
@@ -77,7 +110,8 @@ def monitor_resources():
                 cpu_incident = create_incident(
                     "Resource",
                     "WARNING",
-                    message
+                    message,
+                    "CPU"
                 )
 
                 log_incident(f"INCIDENT | {message}")
@@ -110,7 +144,8 @@ def monitor_resources():
                 memory_incident = create_incident(
                     "Resource",
                     "WARNING",
-                    message
+                    message,
+                    "MEMORY"
                 )
 
                 log_incident(f"INCIDENT | {message}")
@@ -136,6 +171,7 @@ def monitor_resources():
         print("-" * 40)
 
         time.sleep(5)
+
 
 if __name__ == "__main__":
     monitor_resources()
