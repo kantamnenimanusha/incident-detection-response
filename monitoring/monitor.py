@@ -2,7 +2,9 @@ import urllib.request
 import urllib.error
 import time
 from datetime import datetime
+
 from responder import restart_application
+from incident_manager import create_incident, resolve_incident
 
 
 HEALTH_URL = "http://127.0.0.1:5000/health"
@@ -40,6 +42,7 @@ def monitor():
     print("-" * 50)
 
     incident_active = False
+    current_incident = None
 
     while True:
         healthy, message = check_health()
@@ -50,16 +53,34 @@ def monitor():
             print(f"[{current_time}] HEALTHY - {message}")
 
             if incident_active:
-                log_incident("RECOVERED | Application is healthy")
+                resolve_incident(current_incident)
+
+                log_incident(
+                    "RECOVERED | Application is healthy"
+                )
+
                 print(f"[{current_time}] RECOVERY - Incident resolved")
+
                 incident_active = False
+                current_incident = None
 
         else:
             print(f"[{current_time}] INCIDENT - {message}")
 
             if not incident_active:
-                log_incident(f"INCIDENT | {message}")
+
+                current_incident = create_incident(
+                    "Application",
+                    "CRITICAL",
+                    message
+                )
+
+                log_incident(
+                    f"INCIDENT | {message}"
+                )
+
                 print(f"[{current_time}] NEW INCIDENT LOGGED")
+                print("Incident ID:", current_incident["id"])
 
                 restart_application()
 
