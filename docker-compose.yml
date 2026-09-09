@@ -7,4 +7,5 @@ services:
     ports:
       - "5000:5000"
     environment:
-      TESTING_MODE: "true"
+      TESTING_MODE: ${TESTING_MODE:-true}
+    
