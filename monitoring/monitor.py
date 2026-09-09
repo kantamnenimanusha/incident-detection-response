@@ -3,7 +3,7 @@ import urllib.error
 import time
 from datetime import datetime
 
-from responder import restart_application
+from responder import respond_to_incident
 from incident_manager import create_incident, resolve_incident
 
 
@@ -82,7 +82,7 @@ def monitor():
                 print(f"[{current_time}] NEW INCIDENT LOGGED")
                 print("Incident ID:", current_incident["id"])
 
-                restart_application()
+                respond_to_incident(current_incident)
 
                 incident_active = True
 
