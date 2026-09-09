@@ -1,6 +1,7 @@
 import subprocess
 import time
 from datetime import datetime
+from incident_manager import create_incident, resolve_incident
 
 
 CPU_THRESHOLD = 80
@@ -54,6 +55,9 @@ def monitor_resources():
     cpu_incident_active = False
     memory_incident_active = False
 
+    cpu_incident = None
+    memory_incident = None
+
     while True:
         cpu = get_cpu_usage()
         memory = get_memory_usage()
@@ -68,43 +72,70 @@ def monitor_resources():
             print("INCIDENT: High CPU usage detected")
 
             if not cpu_incident_active:
-                log_incident(
-                    f"INCIDENT | High CPU usage detected: {cpu:.2f}%"
+                message = f"High CPU usage detected: {cpu:.2f}%"
+
+                cpu_incident = create_incident(
+                    "Resource",
+                    "WARNING",
+                    message
                 )
+
+                log_incident(f"INCIDENT | {message}")
+
                 print("NEW CPU INCIDENT LOGGED")
+                print("Incident ID:", cpu_incident["id"])
+
                 cpu_incident_active = True
 
         else:
             if cpu_incident_active:
+                resolve_incident(cpu_incident)
+
                 log_incident(
                     f"RECOVERED | CPU usage returned to normal: {cpu:.2f}%"
                 )
+
                 print("CPU RECOVERY - Incident resolved")
+
                 cpu_incident_active = False
+                cpu_incident = None
 
         # Memory monitoring
         if memory > MEMORY_THRESHOLD:
             print("INCIDENT: High memory usage detected")
 
             if not memory_incident_active:
-                log_incident(
-                    f"INCIDENT | High memory usage detected: {memory:.2f}%"
+                message = f"High memory usage detected: {memory:.2f}%"
+
+                memory_incident = create_incident(
+                    "Resource",
+                    "WARNING",
+                    message
                 )
+
+                log_incident(f"INCIDENT | {message}")
+
                 print("NEW MEMORY INCIDENT LOGGED")
+                print("Incident ID:", memory_incident["id"])
+
                 memory_incident_active = True
 
         else:
             if memory_incident_active:
+                resolve_incident(memory_incident)
+
                 log_incident(
                     f"RECOVERED | Memory usage returned to normal: {memory:.2f}%"
                 )
+
                 print("MEMORY RECOVERY - Incident resolved")
+
                 memory_incident_active = False
+                memory_incident = None
 
         print("-" * 40)
 
         time.sleep(5)
-
 
 if __name__ == "__main__":
     monitor_resources()
