@@ -5,6 +5,7 @@ from datetime import datetime
 
 from responder import respond_to_incident
 from incident_manager import create_incident, resolve_incident
+from alert_manager import send_alert
 
 
 HEALTH_URL = "http://127.0.0.1:5000/health"
@@ -72,7 +73,8 @@ def monitor():
                 current_incident = create_incident(
                     "Application",
                     "CRITICAL",
-                    message
+                    message,
+                    "HTTP"
                 )
 
                 log_incident(
@@ -81,6 +83,7 @@ def monitor():
 
                 print(f"[{current_time}] NEW INCIDENT LOGGED")
                 print("Incident ID:", current_incident["id"])
+                send_alert(current_incident)
 
                 respond_to_incident(current_incident)
 
